@@ -11,7 +11,7 @@ app = FastAPI(
     }
 )
 
-app.include_router(tasks.router) # Подключение роутера из /routers/tasks
+app.include_router(tasks.router, prefix="/api/v1") # Подключение роутера из /routers/tasks, плюс добавление префикса
 
 @app.get('/')
 async def welcome() -> dict:
