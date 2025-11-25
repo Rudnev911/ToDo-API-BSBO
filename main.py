@@ -1,6 +1,6 @@
 # Главный файл приложения
 from fastapi import FastAPI
-from routers import tasks
+from routers import tasks, stats
 
 app = FastAPI(
     title="ToDo лист API",
@@ -12,6 +12,7 @@ app = FastAPI(
 )
 
 app.include_router(tasks.router, prefix="/api/v1") # Подключение роутера из /routers/tasks, плюс добавление префикса
+app.include_router(stats.router, prefix="/api/v1") # Подключение роутера /stats
 
 @app.get('/')
 async def welcome() -> dict:
