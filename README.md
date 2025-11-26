@@ -18,3 +18,4 @@
 ```bash
 pip install -r requirements.txt
 uvicorn main:app --reload
+pip freeze > requirements.txt #Обновление зависимостей    
