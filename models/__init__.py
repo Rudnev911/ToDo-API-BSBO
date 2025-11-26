@@ -1,3 +1,3 @@
-from models import Task
+from .task import Task
 
 __all__ = ["Task"]
