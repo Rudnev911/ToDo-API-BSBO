@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -21,10 +21,14 @@ class TaskBase(BaseModel):
         ...,
         description="Важность задачи"
     )
-    is_urgent: bool = Field(
-        ...,
-        description="Срочность задачи"
-    )
+    #is_urgent: bool = Field(
+        #...,
+        #description="Срочность задачи"
+    #)
+    deadline_at: Optional[datetime] = Field(
+    default=None,
+    description="Плановый срок выполнения задачи"
+)
 
 
 # Схема для создания новой задачи
@@ -51,9 +55,9 @@ class TaskUpdate(BaseModel):
         None,
         description="Новая важность"
     )
-    is_urgent: Optional[bool] = Field(
-        None,
-        description="Новая срочность"
+    deadline_at: Optional[datetime] = Field(
+    default=None,
+    description="Новый дедлайн"
     )
     completed: Optional[bool] = Field(
         None,
@@ -61,32 +65,73 @@ class TaskUpdate(BaseModel):
     )
 
 
-# Модель для ответа (TaskResponse)
-# При ответе сервер возвращает полную информацию о задаче,
-# включая сгенерированные поля: id, quadrant, created_at, etc.
 class TaskResponse(TaskBase):
+    """
+    Модель ответа API для задачи — содержит все поля из TaskBase + дополнительные системные поля.
+    Автоматически конвертирует ORM-объекты (например, из SQLAlchemy).
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
     id: int = Field(
         ...,
         description="Уникальный идентификатор задачи",
         examples=[1]
     )
+
     quadrant: str = Field(
         ...,
         description="Квадрант матрицы Эйзенхауэра (Q1, Q2, Q3, Q4)",
         examples=["Q1"]
     )
+
+    is_urgent: bool = Field(
+        ...,
+        description="Срочность задачи (вычисляется автоматически)"
+    )
+
     completed: bool = Field(
         default=False,
         description="Статус выполнения задачи"
     )
-    completed_at: Optional[datetime] = Field(  # Добавьте это поле
-        None,
-        description="Дата и время завершения задачи"
-    )
+
     created_at: datetime = Field(
         ...,
         description="Дата и время создания задачи"
     )
 
-    class Config:
-        from_attributes = True
+    completed_at: Optional[datetime] = Field(
+        default=None,
+        description="Дата и время завершения задачи"
+    )
+
+    days_until_deadline: Optional[int] = Field(
+        default=None,
+        description="Количество дней до дедлайна (если указан)"
+    )
+
+    status_message: Optional[str] = Field(
+        default=None,
+        description="Сообщение о статусе задачи (например, 'Задача просрочена')"
+    )
+
+class TimingStatsResponse(BaseModel):
+    completed_on_time: int = Field(
+        ...,
+        description="Количество задач, завершенных в срок"
+    )
+
+    completed_late: int = Field(
+        ...,
+        description="Количество задач, завершенных с нарушением сроков"
+    )
+
+    on_plan_pending: int = Field(
+        ...,
+        description="Количество задач в работе, выполняемых в соответствии с планом"
+    )
+
+    overtime_pending: int = Field(
+        ...,
+        description="Количество просроченных незавершенных задач"
+    )

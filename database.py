@@ -16,19 +16,19 @@ engine = create_async_engine(
     connect_args={"statement_cache_size": 0}
 )
 
-async_session_maker = async_sessionmaker(
+AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    autoflush=False,  # Не сохранять автоматически при каждом изменении
-    autocommit=False,  # Не коммитить автоматически
+    autoflush=False,
+    autocommit=False,
 )
 
 Base = declarative_base()
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
+    async with AsyncSessionLocal() as session:
         try:
             yield session  # Отдаем сессию в endpoint
         finally:
